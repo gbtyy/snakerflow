@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import org.snaker.engine.model.TransitionModel;
 /**
  * 基本的流程引擎实现类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class SnakerEngineImpl implements SnakerEngine {
 	private static final Logger log = LoggerFactory.getLogger(SnakerEngineImpl.class);
@@ -120,7 +120,7 @@ public class SnakerEngineImpl implements SnakerEngine {
 	
 	/**
 	 * 注入dbAccess
-	 * @param access
+	 * @param access db访问对象
 	 */
 	protected void setDBAccess(DBAccess access) {
 		List<AccessService> services = ServiceContext.findList(AccessService.class);
@@ -193,16 +193,7 @@ public class SnakerEngineImpl implements SnakerEngine {
 		if(args == null) args = new HashMap<String, Object>();
 		Process process = process().getProcessById(id);
 		process().check(process, id);
-		Execution execution = execute(process, operator, args, null, null);
-		
-		if(process.getModel() != null) {
-			StartModel start = process.getModel().getStart();
-			if(start != null) {
-				start.execute(execution);
-			}
-		}
-		
-		return execution.getOrder();
+		return startProcess(process, operator, args);
 	}
 	
 	/**
@@ -239,14 +230,17 @@ public class SnakerEngineImpl implements SnakerEngine {
 		if(args == null) args = new HashMap<String, Object>();
 		Process process = process().getProcessByVersion(name, version);
 		process().check(process, name);
+		return startProcess(process, operator, args);
+	}
+
+	private Order startProcess(Process process, String operator, Map<String, Object> args) {
 		Execution execution = execute(process, operator, args, null, null);
-		
 		if(process.getModel() != null) {
 			StartModel start = process.getModel().getStart();
-			AssertHelper.notNull(start, "指定的流程定义[name=" + name + ", version=" + version + "]没有开始节点");
+			AssertHelper.notNull(start, "流程定义[name=" + process.getName() + ", version=" + process.getVersion() + "]没有开始节点");
 			start.execute(execution);
 		}
-		
+
 		return execution.getOrder();
 	}
 	

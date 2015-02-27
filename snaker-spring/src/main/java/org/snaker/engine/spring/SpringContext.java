@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class SpringContext implements Context {
 	
 	/**
 	 * 根据spring的上下文构造SpringContext
-	 * @param ctx
+	 * @param ctx 上下文
 	 */
 	public SpringContext(ApplicationContext ctx) {
 		this.applicationContext = ctx;
@@ -79,7 +79,7 @@ public class SpringContext implements Context {
 	 * spring不支持向applicationContext中直接添加对象
 	 */
 	public void put(String name, Object object) {
-		log.warn("spring不允许设置服务");
+		log.warn("spring不支持向applicationContext中直接添加对象");
 	}
 	
 	/**

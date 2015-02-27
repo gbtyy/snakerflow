@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.snaker.engine.SnakerException;
 /**
  * 反射帮助类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class ReflectHelper {
 	/**
@@ -92,10 +92,10 @@ public class ReflectHelper {
 	
 	/**
 	 * 根据指定的对象、方法、参数反射调用，并返回调用结果
-	 * @param method
-	 * @param target
-	 * @param args
-	 * @return
+	 * @param method 方法
+	 * @param target 对象
+	 * @param args 参数数组
+	 * @return 方法调用的返回数据
 	 */
 	public static Object invoke(Method method, Object target, Object[] args) {
 		if (method == null) {

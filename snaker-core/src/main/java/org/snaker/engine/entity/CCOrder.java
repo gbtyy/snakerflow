@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ public class CCOrder implements Serializable {
 	private static final long serialVersionUID = -7596174225209412843L;
 	private String orderId;
 	private String actorId;
+    private String creator;
+    private String createTime;
+    private String finishTime;
 	private Integer status;
 	public String getOrderId() {
 		return orderId;
@@ -32,6 +35,14 @@ public class CCOrder implements Serializable {
 	public void setOrderId(String orderId) {
 		this.orderId = orderId;
 	}
+
+    public String getCreator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
 	public String getActorId() {
 		return actorId;
 	}
@@ -44,4 +55,20 @@ public class CCOrder implements Serializable {
 	public void setStatus(Integer status) {
 		this.status = status;
 	}
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
+    }
+
+    public String getFinishTime() {
+        return finishTime;
+    }
+
+    public void setFinishTime(String finishTime) {
+        this.finishTime = finishTime;
+    }
 }

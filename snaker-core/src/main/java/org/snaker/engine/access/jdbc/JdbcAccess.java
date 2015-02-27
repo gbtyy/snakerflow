@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ import org.snaker.engine.helper.ClassHelper;
  * 在无事务控制的情况下，使用cglib的拦截器+ThreadLocale控制
  * @see org.snaker.engine.access.transaction.DataSourceTransactionInterceptor
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class JdbcAccess extends AbstractDBAccess implements DBAccess {
 	private static final Logger log = LoggerFactory.getLogger(JdbcAccess.class);
     /**
      * dbutils的QueryRunner对象
      */
-    private QueryRunner runner = new QueryRunner();
+    private QueryRunner runner = new QueryRunner(true);
     
 	/**
 	 * jdbc的数据源
@@ -70,7 +70,7 @@ public class JdbcAccess extends AbstractDBAccess implements DBAccess {
 	/**
      * 返回数据库连接对象
      * @return
-     * @throws SQLException
+     * @throws java.sql.SQLException
      */
     protected Connection getConnection() throws SQLException {
     	return JdbcHelper.getConnection(dataSource);

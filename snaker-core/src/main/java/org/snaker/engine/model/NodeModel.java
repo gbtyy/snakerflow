@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.snaker.engine.Action;
+import org.snaker.engine.SnakerException;
 import org.snaker.engine.SnakerInterceptor;
 import org.snaker.engine.core.Execution;
 import org.snaker.engine.helper.ClassHelper;
@@ -28,7 +29,7 @@ import org.snaker.engine.helper.StringHelper;
 /**
  * 节点元素（存在输入输出的变迁）
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public abstract class NodeModel extends BaseModel implements Action {
 	/**
@@ -67,14 +68,13 @@ public abstract class NodeModel extends BaseModel implements Action {
 	
 	/**
 	 * 具体节点模型需要完成的执行逻辑
-	 * @param execution
+	 * @param execution 执行对象
 	 */
 	protected abstract void exec(Execution execution);
 	
 	/**
 	 * 对执行逻辑增加前置、后置拦截处理
-	 * @param execution
-	 * @return
+	 * @param execution 执行对象
 	 */
 	public void execute(Execution execution) {
 		intercept(preInterceptorList, execution);
@@ -84,7 +84,7 @@ public abstract class NodeModel extends BaseModel implements Action {
 	
 	/**
 	 * 运行变迁继续执行
-	 * @param execution
+	 * @param execution 执行对象
 	 */
 	protected void runOutTransition(Execution execution) {
 		for (TransitionModel tm : getOutputs()) {
@@ -95,8 +95,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 	
 	/**
 	 * 拦截方法
-	 * @param interceptorList
-	 * @param execution
+	 * @param interceptorList 拦截器列表
+	 * @param execution 执行对象
 	 */
 	private void intercept(List<SnakerInterceptor> interceptorList, Execution execution) {
 		try {
@@ -104,8 +104,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 				interceptor.intercept(execution);
 			}
 		} catch(Exception e) {
-			//拦截器执行过程中出现的异常不影响流程执行逻辑
 			log.error("拦截器执行失败=" + e.getMessage());
+            throw new SnakerException(e);
 		}
 	}
 	
@@ -113,28 +113,47 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 * 根据父节点模型、当前节点模型判断是否可退回。可退回条件：
 	 * 1、满足中间无fork、join、subprocess模型
 	 * 2、满足父节点模型如果为任务模型时，参与类型为any
-	 * @param parent
-	 * @return
+	 * @param parent 父节点模型
+	 * @return 是否可以退回
 	 */
-	public boolean canRejected(NodeModel parent) {
+	public static boolean canRejected(NodeModel current, NodeModel parent) {
 		if(parent instanceof TaskModel && !((TaskModel)parent).isPerformAny()) {
 			return false;
 		}
-		for(TransitionModel tm : parent.getOutputs()) {
-			NodeModel target = tm.getTarget();
-			if(target.getName().equals(this.getName())) {
+        boolean result = false;
+		for(TransitionModel tm : current.getInputs()) {
+			NodeModel source = tm.getSource();
+			if(source == parent) {
 				return true;
 			}
-			if(target instanceof ForkModel 
-					|| target instanceof JoinModel 
-					|| target instanceof SubProcessModel
-                    || target instanceof EndModel) {
+			if(source instanceof ForkModel
+					|| source instanceof JoinModel
+					|| source instanceof SubProcessModel
+					|| source instanceof StartModel) {
 				continue;
 			}
-			return canRejected(target);
+			result = result || canRejected(source, parent);
 		}
-		return false;
+		return result;
 	}
+
+    public <T> List<T> getNextModels(Class<T> clazz) {
+        List<T> models = new ArrayList<T>();
+        for(TransitionModel tm : this.getOutputs()) {
+            addNextModels(models, tm, clazz);
+        }
+        return models;
+    }
+
+    protected <T> void addNextModels(List<T> models, TransitionModel tm, Class<T> clazz) {
+        if(clazz.isInstance(tm.getTarget())) {
+            models.add((T)tm.getTarget());
+        } else {
+            for(TransitionModel tm2 : tm.getTarget().getOutputs()) {
+                addNextModels(models, tm2, clazz);
+            }
+        }
+    }
 	
 	public List<TransitionModel> getInputs() {
 		return inputs;

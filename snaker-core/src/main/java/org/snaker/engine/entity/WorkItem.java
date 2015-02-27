@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * 工作项（待办、已处理任务的查询结果实体）
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class WorkItem implements Serializable {
 	/**
@@ -83,6 +83,10 @@ public class WorkItem implements Serializable {
      * 任务名称
      */
 	private String taskName;
+	/**
+	 * 任务标识名称
+	 */
+	private String taskKey;
 	/**
 	 * 参与类型（0：普通任务；1：参与者fork任务[即：如果10个参与者，需要每个人都要完成，才继续流转]）
 	 */
@@ -195,6 +199,14 @@ public class WorkItem implements Serializable {
 	}
 	public void setTaskName(String taskName) {
 		this.taskName = taskName;
+	}
+
+	public String getTaskKey() {
+		return taskKey;
+	}
+
+	public void setTaskKey(String taskKey) {
+		this.taskKey = taskKey;
 	}
 	public Integer getTaskType() {
 		return taskType;

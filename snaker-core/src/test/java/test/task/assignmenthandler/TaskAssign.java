@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  */
 package test.task.assignmenthandler;
 
-import org.snaker.engine.AssignmentHandler;
+import org.snaker.engine.Assignment;
 import org.snaker.engine.core.Execution;
+import org.snaker.engine.model.TaskModel;
 
 /**
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
-public class TaskAssign implements AssignmentHandler {
+public class TaskAssign extends Assignment {
 	
-	public Object assign(Execution execution) {
+	public Object assign(TaskModel model, Execution execution) {
+        System.out.println(model);
 		System.out.println(execution.getArgs());
 		return "admin";
 	}

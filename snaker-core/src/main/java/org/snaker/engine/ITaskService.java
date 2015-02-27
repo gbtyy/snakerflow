@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.snaker.engine.core.Execution;
+import org.snaker.engine.entity.HistoryTask;
 import org.snaker.engine.entity.Task;
+import org.snaker.engine.model.CustomModel;
 import org.snaker.engine.model.ProcessModel;
 import org.snaker.engine.model.TaskModel;
 
@@ -31,7 +33,7 @@ import org.snaker.engine.model.TaskModel;
  * 5、回退任务
  * 6、提取任务
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public interface ITaskService {
 	/**
@@ -56,6 +58,19 @@ public interface ITaskService {
 	 * @return Task 任务对象
 	 */
 	Task complete(String taskId, String operator, Map<String, Object> args);
+
+	/**
+	 * 更新任务对象
+	 * @param task 任务对象
+	 */
+	void updateTask(Task task);
+	/**
+	 * 根据执行对象、自定义节点模型创建历史任务记录
+	 * @param execution 执行对象
+	 * @param model 自定义节点模型
+	 * @return 历史任务
+	 */
+	HistoryTask history(Execution execution, CustomModel model);
 	
 	/**
 	 * 根据任务主键ID，操作人ID提取任务
@@ -65,6 +80,15 @@ public interface ITaskService {
 	 * @return Task 任务对象
 	 */
 	Task take(String taskId, String operator);
+
+    /**
+     * 根据历史任务主键id，操作人唤醒历史任务
+     * 该方法会导致流程状态不可控，请慎用
+     * @param taskId 历史任务id
+     * @param operator 操作人id
+     * @return Task 唤醒后的任务对象
+     */
+    Task resume(String taskId, String operator);
 	
 	/**
 	 * 向指定的任务id添加参与者

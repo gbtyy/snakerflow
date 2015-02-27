@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.snaker.engine.access.QueryFilter;
 import org.snaker.engine.cache.Cache;
 import org.snaker.engine.cache.CacheManager;
 import org.snaker.engine.cache.CacheManagerAware;
+import org.snaker.engine.entity.HistoryOrder;
 import org.snaker.engine.entity.Process;
 import org.snaker.engine.helper.AssertHelper;
 import org.snaker.engine.helper.DateHelper;
@@ -37,7 +38,7 @@ import org.snaker.engine.parser.ModelParser;
 /**
  * 流程定义业务类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class ProcessService extends AccessService implements IProcessService, CacheManagerAware {
 	private static final Logger log = LoggerFactory.getLogger(ProcessService.class);
@@ -65,7 +66,7 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	
 	public void check(Process process, String idOrName) {
 		AssertHelper.notNull(process, "指定的流程定义[id/name=" + idOrName + "]不存在");
-		if(process.getState() != null && process.getState().intValue() == 0) {
+		if(process.getState() != null && process.getState() == 0) {
 			throw new IllegalArgumentException("指定的流程定义[id/name=" + idOrName + 
 					",version=" + process.getVersion() + "]为非活动状态");
 		}
@@ -95,7 +96,7 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	public Process getProcessById(String id) {
 		AssertHelper.notEmpty(id);
 		Process entity = null;
-		String processName = "";
+		String processName;
 		Cache<String, String> nameCache = ensureAvailableNameCache();
 		Cache<String, Process> entityCache = ensureAvailableEntityCache();
 		if(nameCache != null && entityCache != null) {
@@ -166,7 +167,7 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	
 	/**
 	 * 根据流程定义xml的输入流解析为字节数组，保存至数据库中，并且put到缓存中
-	 * @param input
+	 * @param input 定义输入流
 	 */
 	public String deploy(InputStream input) {
 		return deploy(input, null);
@@ -174,8 +175,8 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	
 	/**
 	 * 根据流程定义xml的输入流解析为字节数组，保存至数据库中，并且put到缓存中
-	 * @param input
-	 * @param creator
+	 * @param input 定义输入流
+	 * @param creator 创建人
 	 */
 	public String deploy(InputStream input, String creator) {
 		AssertHelper.notNull(input);
@@ -207,7 +208,7 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	
 	/**
 	 * 根据流程定义id、xml的输入流解析为字节数组，保存至数据库中，并且重新put到缓存中
-	 * @param input
+	 * @param input 定义输入流
 	 */
 	public void redeploy(String id, InputStream input) {
 		AssertHelper.notNull(input);
@@ -248,7 +249,14 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	 * 级联删除指定流程定义的所有数据
 	 */
 	public void cascadeRemove(String id) {
-		
+		Process entity = access().getProcess(id);
+		List<HistoryOrder> historyOrders = access().getHistoryOrders(null, new QueryFilter().setProcessId(id));
+
+		for(HistoryOrder historyOrder : historyOrders) {
+			ServiceContext.getEngine().order().cascadeRemove(historyOrder.getId());
+		}
+		access().deleteProcess(entity);
+		clear(entity);
 	}
 
 	/**
@@ -269,7 +277,7 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	
 	/**
 	 * 缓存实体
-	 * @param entity
+	 * @param entity 流程定义对象
 	 */
 	private void cache(Process entity) {
 		Cache<String, String> nameCache = ensureAvailableNameCache();
@@ -288,6 +296,20 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 			if(log.isDebugEnabled()) {
 				log.debug("no cache implementation class");
 			}
+		}
+	}
+
+	/**
+	 * 清除实体
+	 * @param entity 流程定义对象
+	 */
+	private void clear(Process entity) {
+		Cache<String, String> nameCache = ensureAvailableNameCache();
+		Cache<String, Process> entityCache = ensureAvailableEntityCache();
+		String processName = entity.getName() + DEFAULT_SEPARATOR + entity.getVersion();
+		if(nameCache != null && entityCache != null) {
+			nameCache.remove(entity.getId());
+			entityCache.remove(processName);
 		}
 	}
 

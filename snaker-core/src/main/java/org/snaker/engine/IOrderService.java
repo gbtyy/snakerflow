@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.snaker.engine.entity.Process;
 /**
  * 流程实例业务类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public interface IOrderService {
 	/**
@@ -44,14 +44,22 @@ public interface IOrderService {
 	 * @return 活动流程实例对象
 	 */
 	Order createOrder(Process process, String operator, Map<String, Object> args, String parentId, String parentNodeName);
+
+    /**
+     * 向指定实例id添加全局变量数据
+     * @param orderId 实例id
+     * @param args 变量数据
+     */
+    void addVariable(String orderId, Map<String ,Object> args);
 	
 	/**
 	 * 创建抄送实例
 	 * @param orderId 流程实例id
 	 * @param actorIds 参与者id
+     * @param creator 创建人id
 	 * @since 1.5
 	 */
-	void createCCOrder(String orderId, String... actorIds);
+	void createCCOrder(String orderId, String creator, String... actorIds);
 	
 	/**
 	 * 流程实例正常完成
@@ -77,6 +85,13 @@ public interface IOrderService {
 	 * @param operator 处理人员
 	 */
 	void terminate(String orderId, String operator);
+
+    /**
+     * 唤醒历史流程实例
+     * @param orderId 流程实例id
+     * @return 活动实例对象
+     */
+    Order resume(String orderId);
 	
 	/**
 	 * 更新流程实例
@@ -97,4 +112,15 @@ public interface IOrderService {
 	 * @param actorId 参与者id
 	 */
 	void deleteCCOrder(String orderId, String actorId);
+
+	/**
+	 * 谨慎使用.数据恢复非常痛苦，你懂得~~
+	 * 级联删除指定流程实例的所有数据：
+	 * 1.wf_order,wf_hist_order
+	 * 2.wf_task,wf_hist_task
+	 * 3.wf_task_actor,wf_hist_task_actor
+	 * 4.wf_cc_order
+	 * @param id
+	 */
+	void cascadeRemove(String id);
 }

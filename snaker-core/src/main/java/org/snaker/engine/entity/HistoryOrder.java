@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.snaker.engine.helper.JsonHelper;
 /**
  * 历史流程实例实体类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class HistoryOrder implements Serializable {
 
@@ -92,6 +92,27 @@ public class HistoryOrder implements Serializable {
     	this.priority = order.getPriority();
     	this.orderNo = order.getOrderNo();
     	this.variable = order.getVariable();
+    }
+
+    /**
+     * 根据历史实例撤回活动实例
+     * @return 活动实例对象
+     */
+    public Order undo() {
+        Order order = new Order();
+        order.setId(this.id);
+        order.setProcessId(this.processId);
+        order.setParentId(this.parentId);
+        order.setCreator(this.creator);
+        order.setCreateTime(this.createTime);
+        order.setLastUpdator(this.creator);
+        order.setLastUpdateTime(this.endTime);
+        order.setExpireTime(this.expireTime);
+        order.setOrderNo(this.orderNo);
+        order.setPriority(this.priority);
+        order.setVariable(this.variable);
+        order.setVersion(0);
+        return order;
     }
 
 	public String getProcessId() {

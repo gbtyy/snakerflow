@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2014 the original author or authors.
+ *  Copyright 2013-2015 www.snakerflow.com.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import java.util.Map;
  * 在无事务控制的情况下，使用cglib的拦截器+ThreadLocale控制
  * @see org.snaker.engine.access.hibernate.HibernateTransactionInterceptor
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public abstract class HibernateAccess extends AbstractDBAccess implements DBAccess {
 	private static final Logger log = LoggerFactory.getLogger(HibernateAccess.class);
@@ -104,6 +104,10 @@ public abstract class HibernateAccess extends AbstractDBAccess implements DBAcce
 
 		getSession().saveOrUpdate(process);
 	}
+
+	public void deleteProcess(Process process) {
+		getSession().delete(process);
+	}
 	
 	public void deleteTask(Task task) {
 		List<TaskActor> actors = getTaskActorsByTaskId(task.getId());
@@ -116,7 +120,19 @@ public abstract class HibernateAccess extends AbstractDBAccess implements DBAcce
 	public void deleteOrder(Order order) {
 		getSession().delete(order);
 	}
-	
+
+	public void deleteHistoryOrder(HistoryOrder historyOrder) {
+		getSession().delete(historyOrder);
+	}
+
+	public void deleteHistoryTask(HistoryTask historyTask) {
+		List<HistoryTaskActor> actors = getHistTaskActorsByTaskId(historyTask.getId());
+		for(HistoryTaskActor actor : actors) {
+			getSession().delete(actor);
+		}
+		getSession().delete(historyTask);
+	}
+
 	public void deleteSurrogate(Surrogate surrogate) {
 		getSession().delete(surrogate);
 	}

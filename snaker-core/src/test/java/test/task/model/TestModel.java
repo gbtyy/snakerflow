@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2014 the original author or authors.
+ *  Copyright 2013-2015 www.snakerflow.com.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package test.task.model;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.snaker.engine.SnakerEngine;
 import org.snaker.engine.access.QueryFilter;
+import org.snaker.engine.cfg.Configuration;
 import org.snaker.engine.entity.Order;
 import org.snaker.engine.entity.Task;
 import org.snaker.engine.helper.StreamHelper;
@@ -36,6 +38,11 @@ import java.util.Map;
  * @since 2.0
  */
 public class TestModel extends TestSnakerBase {
+    @Override
+    protected SnakerEngine getEngine() {
+        return  new Configuration().initProperties("snaker1.properties").buildSnakerEngine();
+    }
+
     @Before
     public void before() {
         processId = engine.process().deploy(StreamHelper.getStreamFromClasspath("test/task/simple/process.snaker"));
@@ -51,11 +58,15 @@ public class TestModel extends TestSnakerBase {
         for(Task task : tasks) {
             TaskModel model = engine.task().getTaskModel(task.getId());
             System.out.println(model.getName());
-            List<TaskModel> models = model.getNextTaskModels();
+            List<TaskModel> models = model.getNextModels(TaskModel.class);
             for(TaskModel tm : models) {
                 System.out.println(tm.getName());
             }
         }
+        List<TaskModel> models = engine.process().getProcessById(processId).getModel().getModels(TaskModel.class);
+            for(TaskModel tm : models) {
+                System.out.println(tm.getName());
+            }
     }
 
 }

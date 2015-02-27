@@ -39,7 +39,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 /**
  * Spring jdbc方式的数据库访问操作
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class SpringJdbcAccess extends AbstractDBAccess implements DBAccess {
 	private static final Logger log = LoggerFactory.getLogger(SpringJdbcAccess.class);
@@ -98,7 +98,8 @@ public class SpringJdbcAccess extends AbstractDBAccess implements DBAccess {
 	
 	public Integer getLatestProcessVersion(String name) {
 		String where = " where name = ?";
-		return template.queryForInt(QUERY_VERSION + where, name);
+        Number number = template.queryForObject(QUERY_VERSION + where, new Object[]{name }, Integer.class);
+        return (number != null ? number.intValue() : -1);
 	}
 
 	@SuppressWarnings("unchecked")

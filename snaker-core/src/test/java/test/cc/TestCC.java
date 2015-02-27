@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.snaker.engine.test.TestSnakerBase;
 
 /**
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class TestCC extends TestSnakerBase {
     @Before
@@ -38,7 +38,7 @@ public class TestCC extends TestSnakerBase {
 		args.put("task1.operator", new String[]{"1"});
 		Order order = engine.startInstanceByName("simple", 0, "2", args);
 		engine.order().createCCOrder(order.getId(), "test");
-//		engine.order().updateCCStatus("01b960b9d5df4be7b8565b9f64bc1856", "test");
+//		engine.order().updateCCStatus("b0fcc08da45d4e88819d9c287917b525", "test");
 //		engine.order().deleteCCOrder("01b960b9d5df4be7b8565b9f64bc1856", "test");
 	}
 }

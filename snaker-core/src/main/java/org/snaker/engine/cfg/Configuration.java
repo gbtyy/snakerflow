@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -129,13 +130,12 @@ public class Configuration {
 		if (!isCMB()) {
 		    parser(EXT_CONFIG_FILE);
 			for(Entry<String, Class<?>> entry : txClass.entrySet()) {
-				Object instance = null;
 				if(interceptor != null) {
-					instance = interceptor.getProxy(entry.getValue());
+                    Object instance = interceptor.getProxy(entry.getValue());
+                    ServiceContext.put(entry.getKey(), instance);
 				} else {
-					instance = ClassHelper.instantiate(entry.getValue());
+                    ServiceContext.put(entry.getKey(), entry.getValue());
 				}
-				ServiceContext.put(entry.getKey(), instance);
 			}
 		}
 		
@@ -202,6 +202,26 @@ public class Configuration {
 		this.accessDBObject = dbObject;
 		return this;
 	}
+
+    /**
+     * 可装载自定义的属性配置文件
+     * @param fileName 属性文件名称
+     * @return Configuration
+     */
+    public Configuration initProperties(String fileName) {
+        ConfigHelper.loadProperties(fileName);
+        return this;
+    }
+
+    /**
+     * 可装载已有的属性对象
+     * @param properties 属性对象
+     * @return Configuration
+     */
+    public Configuration initProperties(Properties properties) {
+        ConfigHelper.loadProperties(properties);
+        return this;
+    }
 	
 	/**
 	 * 返回DBAccess的数据库访问对象

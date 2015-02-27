@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@ package org.snaker.engine.core;
 import java.util.List;
 import java.util.Map;
 
+import org.snaker.engine.Completion;
 import org.snaker.engine.IOrderService;
 import org.snaker.engine.SnakerEngine;
 import org.snaker.engine.access.QueryFilter;
-import org.snaker.engine.entity.CCOrder;
-import org.snaker.engine.entity.HistoryOrder;
-import org.snaker.engine.entity.Order;
+import org.snaker.engine.entity.*;
 import org.snaker.engine.entity.Process;
-import org.snaker.engine.entity.Task;
 import org.snaker.engine.helper.AssertHelper;
 import org.snaker.engine.helper.DateHelper;
 import org.snaker.engine.helper.JsonHelper;
@@ -34,7 +32,7 @@ import org.snaker.engine.model.ProcessModel;
 /**
  * 流程实例业务类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class OrderService extends AccessService implements IOrderService {
 	/**
@@ -77,16 +75,31 @@ public class OrderService extends AccessService implements IOrderService {
 		saveOrder(order);
 		return order;
 	}
-	
-	/**
+
+    /**
+     * 向活动实例临时添加全局变量数据
+     * @param orderId 实例id
+     * @param args 变量数据
+     */
+    public void addVariable(String orderId, Map<String, Object> args) {
+        Order order = access().getOrder(orderId);
+        Map<String, Object> data = order.getVariableMap();
+        data.putAll(args);
+        order.setVariable(JsonHelper.toJson(data));
+        access().updateOrderVariable(order);
+    }
+
+    /**
 	 * 创建实例的抄送
 	 */
-	public void createCCOrder(String orderId, String... actorIds) {
+	public void createCCOrder(String orderId, String creator, String... actorIds) {
 		for(String actorId : actorIds) {
 			CCOrder ccorder = new CCOrder();
 			ccorder.setOrderId(orderId);
 			ccorder.setActorId(actorId);
+            ccorder.setCreator(creator);
 			ccorder.setStatus(STATE_ACTIVE);
+            ccorder.setCreateTime(DateHelper.getTime());
 			access().saveCCOrder(ccorder);
 		}
 	}
@@ -102,7 +115,7 @@ public class OrderService extends AccessService implements IOrderService {
 	}
 	
 	/**
-	 * 更新活动实例的last_Updator、last_Update_Time、version
+	 * 更新活动实例的last_Updator、last_Update_Time、expire_Time、version、variable
 	 */
 	public void updateOrder(Order order) {
 		access().updateOrder(order);
@@ -116,6 +129,7 @@ public class OrderService extends AccessService implements IOrderService {
         AssertHelper.notNull(ccorders);
         for(CCOrder ccorder : ccorders) {
             ccorder.setStatus(STATE_FINISH);
+            ccorder.setFinishTime(DateHelper.getTime());
             access().updateCCOrder(ccorder);
         }
 	}
@@ -136,12 +150,16 @@ public class OrderService extends AccessService implements IOrderService {
 	 */
 	public void complete(String orderId) {
 		Order order = access().getOrder(orderId);
-		HistoryOrder history = new HistoryOrder(order);
+		HistoryOrder history = access().getHistOrder(orderId);
 		history.setOrderState(STATE_FINISH);
 		history.setEndTime(DateHelper.getTime());
 		
 		access().updateHistory(history);
 		access().deleteOrder(order);
+        Completion completion = getCompletion();
+        if(completion != null) {
+            completion.complete(history);
+        }
 	}
 	
 	/**
@@ -170,5 +188,62 @@ public class OrderService extends AccessService implements IOrderService {
 		
 		access().updateHistory(history);
 		access().deleteOrder(order);
+        Completion completion = getCompletion();
+        if(completion != null) {
+            completion.complete(history);
+        }
+	}
+
+    /**
+     * 激活已完成的历史流程实例
+     * @param orderId 实例id
+     * @return 活动实例对象
+     */
+    public Order resume(String orderId) {
+        HistoryOrder historyOrder = access().getHistOrder(orderId);
+        Order order = historyOrder.undo();
+        access().saveOrder(order);
+        historyOrder.setOrderState(STATE_ACTIVE);
+        access().updateHistory(historyOrder);
+
+        SnakerEngine engine = ServiceContext.getEngine();
+        List<HistoryTask> histTasks = access().getHistoryTasks(null,
+                new QueryFilter().setOrderId(orderId));
+        if(histTasks != null && !histTasks.isEmpty()) {
+            HistoryTask histTask = histTasks.get(0);
+            engine.task().resume(histTask.getId(), histTask.getOperator());
+        }
+        return order;
+    }
+
+	/**
+	 * 级联删除指定流程实例的所有数据：
+	 * 1.wf_order,wf_hist_order
+	 * 2.wf_task,wf_hist_task
+	 * 3.wf_task_actor,wf_hist_task_actor
+	 * 4.wf_cc_order
+	 * @param id 实例id
+	 */
+	public void cascadeRemove(String id) {
+		HistoryOrder historyOrder = access().getHistOrder(id);
+		AssertHelper.notNull(historyOrder);
+		List<Task> activeTasks = access().getActiveTasks(null, new QueryFilter().setOrderId(id));
+		List<HistoryTask> historyTasks = access().getHistoryTasks(null, new QueryFilter().setOrderId(id));
+		for(Task task : activeTasks) {
+			access().deleteTask(task);
+		}
+		for(HistoryTask historyTask : historyTasks) {
+			access().deleteHistoryTask(historyTask);
+		}
+		List<CCOrder> ccOrders = access().getCCOrder(id);
+		for(CCOrder ccOrder : ccOrders) {
+			access().deleteCCOrder(ccOrder);
+		}
+
+		Order order = access().getOrder(id);
+		access().deleteHistoryOrder(historyOrder);
+		if(order != null) {
+			access().deleteOrder(order);
+		}
 	}
 }

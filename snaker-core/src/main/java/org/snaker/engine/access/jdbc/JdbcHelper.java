@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.snaker.engine.access.dialect.*;
 import org.snaker.engine.access.transaction.TransactionObjectHolder;
 import org.snaker.engine.helper.AssertHelper;
 import org.snaker.engine.helper.ConfigHelper;
@@ -30,7 +31,7 @@ import org.snaker.engine.helper.StringHelper;
 /**
  * Jdbc操作帮助类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public abstract class JdbcHelper {
 	private static DataSource dataSource = null;
@@ -320,9 +321,29 @@ public abstract class JdbcHelper {
     }
 
     /**
+     * 根据连接对象获取数据库方言
+     * @param conn 数据库连接
+     * @return Dialect 方言
+     * @throws Exception
+     */
+    public static Dialect getDialect(Connection conn) throws Exception {
+        DatabaseMetaData databaseMetaData = conn.getMetaData();
+        String databaseProductName = databaseMetaData.getDatabaseProductName();
+        String dbType = databaseTypeMappings.getProperty(databaseProductName);
+		if(StringHelper.isEmpty(dbType)) return null;
+        if(dbType.equalsIgnoreCase("mysql")) return new MySqlDialect();
+        else if(dbType.equalsIgnoreCase("oracle")) return new OracleDialect();
+        else if(dbType.equalsIgnoreCase("postgres")) return new PostgresqlDialect();
+        else if(dbType.equalsIgnoreCase("mssql")) return new SQLServerDialect();
+		else if(dbType.equalsIgnoreCase("db2")) return new Db2Dialect();
+		else if(dbType.equalsIgnoreCase("h2")) return new H2Dialect();
+        else return null;
+    }
+
+    /**
      * 判断是否已经执行过脚本[暂时根据wf_process表是否有数据]
      * @param conn 数据库连接
-     * @return
+     * @return 是否执行成功
      */
     public static boolean isExec(Connection conn) {
         Statement stmt = null;

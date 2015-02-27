@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.snaker.engine.helper.JsonHelper;
 /**
  * 流程工作单实体类（一般称为流程实例）
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class Order implements Serializable {
 	/**
@@ -37,7 +37,7 @@ public class Order implements Serializable {
 	/**
 	 * 版本
 	 */
-	private Integer version;
+	private Integer version = 0;
 	/**
 	 * 流程定义ID
 	 */
@@ -82,10 +82,6 @@ public class Order implements Serializable {
      * 流程实例附属变量
      */
     private String variable;
-    /**
-     * 流程实例变量map集合
-     */
-    //private Map<String, Object> variableMap;
 
 	public String getProcessId() {
 		return processId;

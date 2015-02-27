@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.snaker.engine.helper.StringHelper;
 /**
  * 决策定义decision元素
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class DecisionModel extends NodeModel {
 	private static final Logger log = LoggerFactory.getLogger(DecisionModel.class);
@@ -50,7 +50,7 @@ public class DecisionModel extends NodeModel {
 	/**
 	 * 表达式解析器
 	 */
-	private Expression expression;
+	private transient Expression expression;
 	
 	public void exec(Execution execution) {
 		log.info(execution.getOrder().getId() + "->decision execution.getArgs():" + execution.getArgs());

@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.snaker.engine.model.SubProcessModel;
 /**
  * 结束流程实例的处理器
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class EndProcessHandler implements IHandler {
 	/**
@@ -60,8 +60,9 @@ public class EndProcessHandler implements IHandler {
 			ProcessModel pm = process.getModel();
 			if(pm == null) return;
 			SubProcessModel spm = (SubProcessModel)pm.getNode(order.getParentNodeName());
-			Execution newExecution = new Execution(engine, process, parentOrder, execution.getArgs());
-			newExecution.setChildOrderId(order.getId());
+            Execution newExecution = new Execution(engine, process, parentOrder, execution.getArgs());
+            newExecution.setChildOrderId(order.getId());
+            newExecution.setTask(execution.getTask());
 			spm.execute(newExecution);
 			/**
 			 * SubProcessModel执行结果的tasks合并到当前执行对象execution的tasks列表中

@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * 任务定义task元素
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public class TaskModel extends WorkModel {
 	/**
@@ -58,10 +58,10 @@ public class TaskModel extends WorkModel {
 		ANY, ALL;
 	}
 	/**
-	 * 任务类型(Major:主办的,Aidant:协助的)
+	 * 任务类型(Major:主办的,Aidant:协助的,Record:仅仅作为记录的)
 	 */
 	public enum TaskType {
-		Major, Aidant;
+		Major, Aidant, Record;
 	}
 	/**
 	 * 参与者变量名称
@@ -244,27 +244,13 @@ public class TaskModel extends WorkModel {
     /**
      * 获取后续任务模型集合（方便预处理）
      * @return 模型集合
+     * @deprecated
      */
     public List<TaskModel> getNextTaskModels() {
         List<TaskModel> models = new ArrayList<TaskModel>();
         for(TransitionModel tm : this.getOutputs()) {
-            addNextTaskModels(models, tm);
+            addNextModels(models, tm, TaskModel.class);
         }
         return models;
-    }
-
-    /**
-     * 递归添加后续任务模型
-     * @param models 模型集合
-     * @param tm 连接模型
-     */
-    private void addNextTaskModels(List<TaskModel> models, TransitionModel tm) {
-        if(tm.getTarget() instanceof TaskModel) {
-            models.add((TaskModel)tm.getTarget());
-        } else {
-            for(TransitionModel tm2 : tm.getTarget().getOutputs()) {
-                addNextTaskModels(models, tm2);
-            }
-        }
     }
 }

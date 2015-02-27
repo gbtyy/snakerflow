@@ -1,4 +1,4 @@
-/* Copyright 2013-2014 the original author or authors.
+/* Copyright 2013-2015 www.snakerflow.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ import org.snaker.engine.core.Execution;
 
 /**
  * 分配参与者的处理接口
+ * 建议使用Assignment接口
  * @author yuqs
- * @version 1.0
  * @since 1.2.1
+ * @see org.snaker.engine.Assignment
  */
 public interface AssignmentHandler {
 	/**

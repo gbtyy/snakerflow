@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2014 the original author or authors.
+ *  Copyright 2013-2015 www.snakerflow.com.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import java.util.Map.Entry;
 /**
  * mybatis操作帮助类
  * @author yuqs
- * @version 1.0
+ * @since 1.0
  */
 public abstract class MybatisHelper {
 	private static final Logger log = LoggerFactory.getLogger(MybatisHelper.class);
@@ -75,7 +75,7 @@ public abstract class MybatisHelper {
 
 	/**
 	 * 使用DataSource初始化SqlSessionFactory
-	 * @param ds
+	 * @param ds 数据源
 	 */
 	public static void initialize(DataSource ds) {
 		TransactionFactory transactionFactory = new MybatisTransactionFactory();
@@ -103,10 +103,8 @@ public abstract class MybatisHelper {
 	}
 	
 	public static Connection getConnection() throws SQLException {
-		if(sqlSessionFactory != null) {
-	    	log.info("found sqlSessionFactory:" + sqlSessionFactory);
-    	} else {
-    		log.info("don't found available sqlSessionFactory");
+		if(sqlSessionFactory == null) {
+    		log.debug("don't found available sqlSessionFactory");
     		sqlSessionFactory = getSqlSessionFactory();
     	}
     	DataSource dataSource = sqlSessionFactory.
@@ -120,17 +118,14 @@ public abstract class MybatisHelper {
 		SqlSession session = (SqlSession)TransactionObjectHolder.get();
 		if(session != null) return session;
     	if(sqlSessionFactory != null) {
-	    	log.info("found sqlSessionFactory:" + sqlSessionFactory);
 	    	return sqlSessionFactory.openSession();
-    	} else {
-    		log.info("don't found available sqlSessionFactory");
     	}
 		return getSqlSessionFactory().openSession();
 	}
 
 	/**
 	 * 返回SqlSessionFactory
-	 * @return
+	 * @return SqlSessionFactory
 	 */
 	public static SqlSessionFactory getSqlSessionFactory() {
 		if(sqlSessionFactory == null) {
